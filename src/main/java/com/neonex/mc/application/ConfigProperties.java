@@ -47,4 +47,9 @@ public class ConfigProperties {
     public void setFilename(String filename) {
         this.filename = filename;
     }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }
