@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NEONEXSOFT E-NAVI MC Mockup</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- 합쳐지고 최소화된 최신 CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+
+    <!-- 부가적인 테마 -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+
+
+    <!-- IE8 에서 HTML5 요소와 미디어 쿼리를 위한 HTML5 shim 와 Respond.js -->
+    <!-- WARNING: Respond.js 는 당신이 file:// 을 통해 페이지를 볼 때는 동작하지 않습니다. -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body role="document" style="padding:10px">
+<div class="container theme-showcase" role="main">
+
+    <h3>MC Mockup test</h3>
+    <p>This is a MC Mockup Page for sending a message from the Marine Cloud to the Marine Cloud Connector.</p>
+
+    <div style="height: auto;overflow: hidden;">
+        <div style="float:left;width:800px;overflow: hidden;">
+            <form id="send_form">
+                <div class="page-header">
+                    <h4>REQUEST TO MCC</h4>
+                </div>
+                <div class="form-group">
+                    <label for="dstMRN">dstMRN</label>
+                    <input type="text" class="form-control" id="dstMRN" placeholder="please insert dstMRN">
+                </div>
+                <div class="form-group">
+                    <label for="srcMRN">srcMRN</label>
+                    <input type="text" class="form-control" id="srcMRN" placeholder="please insert srcMRN">
+                </div>
+                <div class="form-group">
+                    <label for="s100">S-100</label>
+                    <textarea class="form-control" id="s100" rows="5"></textarea>
+                </div>
+                <button type="submit" id="btn-submit" class="btn btn-default">SEND</button>
+            </form>
+        </div>
+
+        <div style="float:right;width:300px;overflow: hidden;">
+            <div class="page-header">
+                <h4>Response From MCC</h4>
+            </div>
+            <div id="feedback"></div>
+        </div>
+
+    </div>
+
+    <div class="page-header">
+        <h4>RESPONSE FROM MCC</h4><span id="responseDiv"></span>
+        <button type="button" id="removeBtn" class="btn btn-default btn-xs">
+            <span class="glyphicon glyphicon-star" aria-hidden="true"></span> REMOVE LOG
+        </button>
+    </div>
+    <div class="form-group">
+        <textarea class="form-control" id="resultArea" rows="15" style="font-size:12px;color:aqua;background: black;"></textarea>
+    </div>
+</div>
+
+
+
+<!-- jQuery (부트스트랩의 자바스크립트 플러그인을 위해 필요합니다) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<!-- 모든 컴파일된 플러그인을 포함합니다 (아래), 원하지 않는다면 필요한 각각의 파일을 포함하세요 -->
+<!-- 합쳐지고 최소화된 최신 자바스크립트 -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+
+<script>
+    var intervalScript = "";
+    $(document).ready(function(){
+        $("#send_form").submit(function(event){
+            //stop submit the form, we will post it manually.
+            event.preventDefault();
+            fire_ajax_submit();
+        });
+        intervalScript = setInterval(readLog, 2000);
+        $( "#removeBtn" ).click(function() {removeLog();});
+    });
+
+    function fire_ajax_submit(){
+        var sendData = {}
+        sendData["dstMRN"] = $("#dstMRN").val();
+        sendData["srcMRN"] = $("#srcMRN").val();
+        sendData["s100"] = $("#s100").val();
+
+        $("#btn-submit").prop("disabled", true);
+        $.ajax({
+            type:"POST",
+            contentType:"application/json",
+            url:"/mcc",
+            data: JSON.stringify(sendData),
+            dataType: 'json',
+            cache: false,
+            timeout: 10000,
+            success: function(data){
+                var json = "<pre style='color:blue'>SUCCESS : " + JSON.stringify(data,null,4)+"</pre>";
+                $("#feedback").html(json);
+                $("#btn-submit").prop("disabled", false);
+            },
+            error: function(e){
+                var json = "<pre style='color:red'>ERROR :" + e.responseText + "</pre>";
+                $('#feedback').html(json);
+                $("#btn-submit").prop("disabled", false);
+            }
+        });
+    }
+    var readCount = 0;
+    function readLog(){
+         $.ajax({
+            type:"POST",
+            url:"/readLog",
+            data: "readCount=" + readCount,
+            cache: false,
+            timeout: 10000,
+            success: function(data){
+                var now = new Date();
+                $("#responseDiv").html("Last updated time : " + now);
+                if(readCount != data.split("|")[0]){
+                    $("#resultArea").val( $("#resultArea").val() +"\n"+ data.split("|")[1]);
+                    readCount= data.split("|")[0];
+                    $("#resultArea").scrollTop($("#resultArea")[0].scrollHeight);
+                }
+            },
+            error: function(e){
+                $("#responseDiv").html("ERROR : stopped  this Interval function script (if you want to start this , please refresh this page(click F5))");
+               clearInterval(intervalScript);
+            }
+
+        });
+    }
+
+    function removeLog(){
+        $("#resultArea").val("");
+        readCount = 0;
+         $.ajax({
+            type:"POST",
+            url:"/removeLog",
+            cache: false,
+            timeout: 10000,
+            success: function(data){
+            },
+            error: function(e){
+                $("#responseDiv").html("ERROR : stopped  this Interval function script (if you want to start this , please refresh this page(click F5))");
+            }
+        });;
+    }
+
+</script>

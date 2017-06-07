@@ -1,0 +1,5 @@
+mcMockup:
+  user_agent: "NEONEXSOFT_E_NAVI/1.0"
+  url: "http://192.168.11.31:8088/mccProc"
+  charset: "UTF-8"
+  filename: "MccRequest.log"
