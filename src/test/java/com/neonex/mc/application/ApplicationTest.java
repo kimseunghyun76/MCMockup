@@ -19,6 +19,7 @@ public class ApplicationTest {
 
     @Autowired
     private MockMvc mockMvc;
+/*
 
     @Test
     public void homePage() throws Exception {
@@ -32,6 +33,7 @@ public class ApplicationTest {
         mockMvc.perform(get("/result"))
                 .andExpect(content().string(containsString("Hello, World!")));
     }
+*/
 
 
 }

@@ -53,10 +53,6 @@ public class MccController {
 
             //add request header
             connection.setRequestMethod("POST");
-            connection.setRequestProperty("User-Agent",properties.getUser_agent());
-            connection.setRequestProperty("Accept-Charset",properties.getCharset());
-            connection.setRequestProperty("dstMRN",param.getDstMRN());
-            connection.setRequestProperty("srcMRN",param.getSrcMRN());
 
             //Send post request
             connection.setDoOutput(true);

@@ -15,6 +15,7 @@ public class ConfigProperties {
     private String url;
     private String charset;
     private String filename;
+    private String getElasticUrl;
 
     public String getUser_agent() {
         return user_agent;
